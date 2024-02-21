@@ -8,7 +8,7 @@ const io = new Server({
 let onlineUsers = [];
 
 const onConnect = (socket) => {
-  //   console.log("sockeeeeee");
+  console.log("Web Socket is Up and Running!");
   console.log(socket.id);
 
   socket.on("addNewUser", (userId) => {
@@ -17,18 +17,15 @@ const onConnect = (socket) => {
         userId,
         socketId: socket.id,
       });
-    console.log(onlineUsers);
 
     io.emit("getOnlineUsers", onlineUsers);
   });
 
-  socket.on("sendMessage", (message) => {
-    const user = onlineUsers.find(
-      (user) => user.userId === message.recipientId
-    );
-
+  socket.on("sendMessage", (data) => {
+    const user = onlineUsers.find((user) => user.userId === data.recipientId);
+    console.log(user);
     if (user) {
-      io.to(user.socketId).emit("getMessage", message);
+      io.to(user.socketId).to(socket.id).emit("getMessage", data.message);
     }
   });
 

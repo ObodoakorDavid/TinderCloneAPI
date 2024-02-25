@@ -44,6 +44,7 @@ const registerUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
   // grab email and password from req.body
   const { email, password } = req.body;
+  console.log(email);
 
   if (!email) {
     return next(customError(400, "Please provide an email"));
@@ -58,6 +59,8 @@ const loginUser = async (req, res, next) => {
   }
 
   const isPasswordCorrect = await user.comparePassword(password);
+
+  console.log(user);
 
   if (!isPasswordCorrect) {
     return next(customError(401, "Unauthorized"));
@@ -89,11 +92,22 @@ const getUser = async (req, res) => {
   });
 };
 
+const getAllUsers = async (req, res) => {
+  const users = await UserProfile.find(
+    {},
+    { __v: 0, createdAt: 0, updatedAt: 0, isVerified: 0, userId: 0 }
+  );
+  res.status(200).json({ users });
+};
+
 //UPDATE USER
 const updateUser = async (req, res, next) => {
   //get userId from auth middleware
   const { userId } = req.user;
   const { password } = req.body;
+  if (!password) {
+    return next(customError(401, "Please provide password"));
+  }
 
   const userProfile = await UserProfile.findOne({ _id: userId });
 
@@ -161,13 +175,40 @@ const updateUser = async (req, res, next) => {
     updatedDetails["$push"] = { photos: uploadedUrls };
   }
 
+  // grabbing user info
+  const { firstName, lastName, email, phoneNumber } = req.body;
+  const updatedUserInfo = {};
+
+  if (firstName) {
+    updatedUserInfo.firstName = firstName;
+  }
+  if (lastName) {
+    updatedUserInfo.lastName = lastName;
+  }
+  if (email) {
+    updatedUserInfo.email = email;
+  }
+  if (phoneNumber) {
+    updatedUserInfo.phoneNumber = phoneNumber;
+  }
+
   try {
+    // updating userProfile model
     await UserProfile.findOneAndUpdate(
       { _id: userId },
       {
         ...updatedDetails,
       }
     );
+
+    //updating user model
+    await User.findOneAndUpdate(
+      { _id: userProfile.userId },
+      {
+        ...updatedUserInfo,
+      }
+    );
+
     return res.status(200).json({ message: "Details Updated Sucessfully!" });
   } catch (error) {
     return res.status(500).json({
@@ -235,6 +276,63 @@ const verifyOTP = async (req, res, next) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return next(customError(400, "Please provide an email"));
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(customError(401, "No User with this Email"));
+  }
+
+  const otp = generateOTP();
+
+  const subject = "Here is your OTP";
+  const text = `Please use this otp to reset your password. OTP: ${otp}`;
+
+  try {
+    const info = await sendEmail({ to: email, subject, text });
+    const result = await OTP.create({ email, otp });
+
+    res.status(201).json({
+      message: `OTP has been sent to ${info.envelope.to}`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { email, otp, password } = req.body;
+
+  if (!email) {
+    return next(customError(400, "Please provide an email"));
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(customError(401, "No User with this Email"));
+  }
+
+  const otpBody = await OTP.findOne({ email, otp });
+
+  if (!otpBody) {
+    return res.status(400).json({ message: "Invalid or Expired OTP" });
+  }
+
+  try {
+    user.password = password;
+    await user.save();
+    await OTP.findOneAndDelete({ email, otp });
+    res.status(200).json({ message: "Password Updated!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -242,4 +340,7 @@ module.exports = {
   updateUser,
   sendOTP,
   verifyOTP,
+  getAllUsers,
+  forgotPassword,
+  resetPassword,
 };

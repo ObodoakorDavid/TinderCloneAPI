@@ -22,10 +22,9 @@ const onConnect = (socket) => {
   });
 
   socket.on("sendMessage", (data) => {
-    const user = onlineUsers.find((user) => user.userId === data.recipientId);
-    console.log(user);
+    const user = onlineUsers.find((user) => user.userId === data.sentBy);
     if (user) {
-      io.to(user.socketId).to(socket.id).emit("getMessage", data.message);
+      io.to(user.socketId).to(socket.id).emit("getMessage", data);
     }
   });
 

@@ -1,16 +1,13 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      // minLength: [3, "Username is too short"],
     },
     lastName: {
       type: String,
-      // minLength: [3, "Username is too short"],
     },
     email: {
       type: String,
@@ -26,6 +23,15 @@ const UserSchema = new mongoose.Schema(
       required: [true, "Please provide a password"],
       minLength: [3, "Password is too short"],
     },
+    phoneNumber: {
+      type: String,
+      required: [true, "Please provide a phone number"],
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
   },
   {
     timestamps: true,
@@ -33,6 +39,9 @@ const UserSchema = new mongoose.Schema(
 );
 
 UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();

@@ -39,10 +39,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/like", likeRouter);
 app.use("/api/star", starRouter);
 app.use("/api/admin", adminRouter);
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
 app.use("/api/chat", chatRouter);
 app.use("/api/message", messageRouter);
 

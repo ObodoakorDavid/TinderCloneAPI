@@ -5,6 +5,7 @@ const sendEmail = require("../utils/sendEmail");
 const OTP = require("../models/otp");
 const generateOTP = require("../utils/generateOTP");
 const cloudinary = require("../utils/cloudinaryConfig");
+const generateEmail = require("../utils/generateEmail");
 
 const registerUser = async (req, res, next) => {
   //grab email, password from req.body
@@ -14,21 +15,29 @@ const registerUser = async (req, res, next) => {
   }
 
   try {
-    //create new user on the DB
+    // create new user on the DB
     const user = await User.create({ ...req.body });
     const userProfile = await UserProfile.create({ userId: user._id });
 
-    //generate new token
+    // generate new token
     // const token = userProfile.createJWT();
 
     //generating OTP
     const otp = generateOTP();
 
     // Sending OTP
-    const subject = "Here is your OTP";
-    const text = `Please use this otp to verify your account. OTP: ${otp}`;
+    const subject = "OTP Request";
+    const intro =
+      "You received this email because you registered on Duduconnect";
 
-    const info = await sendEmail({ to: user.email, subject, text });
+    const { emailBody, emailText } = generateEmail(intro, user.firstName, otp);
+
+    const info = await sendEmail({
+      to: "davidtumuch@gmail.com",
+      subject,
+      text: emailText,
+      html: emailBody,
+    });
 
     const result = await OTP.create({ email, otp });
 
@@ -68,10 +77,10 @@ const loginUser = async (req, res, next) => {
 
   const userProfile = await UserProfile.findOne({ userId: user._id });
 
-  //Checks if user email has been verified
-  // if (!userProfile.isVerified) {
-  //   return res.status(401).json({ message: "Email not verified!" });
-  // }
+  // Checks if user email has been verified
+  if (!userProfile.isVerified) {
+    return res.status(401).json({ message: "Email not verified!" });
+  }
 
   //generate new token
   const token = userProfile.createJWT();

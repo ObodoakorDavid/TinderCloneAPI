@@ -9,8 +9,8 @@ const generateEmail = require("../utils/generateEmail");
 
 const registerUser = async (req, res, next) => {
   //grab email, password from req.body
-  const { email, password, firstName, lastName } = req.body;
-  if (!email || !password || !firstName || !lastName || phoneNumber) {
+  const { email, password, firstName, lastName, phoneNumber } = req.body;
+  if (!email || !password || !firstName || !lastName || !phoneNumber) {
     return next(customError(400, "Please provide all fields"));
   }
 

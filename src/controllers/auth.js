@@ -33,7 +33,7 @@ const registerUser = async (req, res, next) => {
     const { emailBody, emailText } = generateEmail(intro, user.firstName, otp);
 
     const info = await sendEmail({
-      to: "davidtumuch@gmail.com",
+      to: email,
       subject,
       text: emailText,
       html: emailBody,

@@ -92,6 +92,7 @@ const loginUser = async (req, res, next) => {
 //GET USER
 const getUser = async (req, res) => {
   const { userId } = req.user;
+  console.log(userId);
   const userProfile = await UserProfile.findOne({ _id: userId });
 
   res.status(200).json({
@@ -313,7 +314,7 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
   const { email, otp, password } = req.body;
 
   if (!email) {
@@ -322,13 +323,13 @@ const resetPassword = async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return next(customError(401, "No User with this Email"));
+    return next(customError(400, "No User with this Email"));
   }
 
   const otpBody = await OTP.findOne({ email, otp });
 
   if (!otpBody) {
-    return res.status(400).json({ message: "Invalid or Expired OTP" });
+    return next(customError(400, "Invalid or Expired OTP"));
   }
 
   try {

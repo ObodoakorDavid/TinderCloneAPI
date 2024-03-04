@@ -285,7 +285,7 @@ const verifyOTP = async (req, res, next) => {
   }
 };
 
-const forgotPassword = async (req, res) => {
+const forgotPassword = async (req, res, next) => {
   const { email } = req.body;
 
   if (!email) {

@@ -184,6 +184,8 @@ const sendOTP = async (req, res, next) => {
 
   const subject = "Here is your OTP";
   const text = `Please use this otp to verify your account. OTP: ${otp}`;
+  const intro =
+      "You received this email because you requested for an OTP on Duduconnect";
 
   const { emailBody, emailText } = generateEmail(intro, user.firstName, otp);
 

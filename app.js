@@ -16,7 +16,6 @@ const likeRouter = require("./src/routes/like");
 const starRouter = require("./src/routes/star");
 const adminRouter = require("./src/routes/admin");
 const chatRouter = require("./src/routes/chat");
-const messageRouter = require("./src/routes/message");
 const io = require("./src/socket/socket");
 
 const app = express();
@@ -39,7 +38,6 @@ app.use("/api/like", likeRouter);
 app.use("/api/star", starRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/chat", chatRouter);
-app.use("/api/message", messageRouter);
 
 app.use(notFound);
 app.use(error);

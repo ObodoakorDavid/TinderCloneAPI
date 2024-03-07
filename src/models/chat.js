@@ -7,16 +7,13 @@ const chatSchema = new mongoose.Schema(
     members: {
       type: Array,
     },
-    messages: {
-      type: [
-        {
-          type: mongoose.Types.ObjectId,
-          ref: "Message",
-          required: true,
-        },
-      ],
-      default: [],
-    },
+    messages: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Message",
+        required: true,
+      },
+    ],
   },
   {
     timestamps: true,

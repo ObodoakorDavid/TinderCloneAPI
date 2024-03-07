@@ -4,8 +4,9 @@ const customError = require("../utils/customError");
 const sendEmail = require("../utils/sendEmail");
 const OTP = require("../models/otp");
 const generateOTP = require("../utils/generateOTP");
-const cloudinary = require("../utils/cloudinaryConfig");
 const generateEmail = require("../utils/generateEmail");
+const userService = require("../services/userService");
+const uploadService = require("../services/uploadService");
 
 const registerUser = async (req, res, next) => {
   //grab email, password from req.body
@@ -61,12 +62,12 @@ const loginUser = async (req, res, next) => {
     return next(customError(400, "Please provide a password"));
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: email.toLowerCase() });
   if (!user) {
     return next(customError(401, "No User with this Email"));
   }
 
-  const isPasswordCorrect = await user.comparePassword(password);
+  const isPasswordCorrect = await user.comparePassword(password.toLowerCase());
 
   console.log(user);
 
@@ -111,118 +112,59 @@ const getAllUsers = async (req, res) => {
 
 //UPDATE USER
 const updateUser = async (req, res, next) => {
-  //get userId from auth middleware
-  const { userId } = req.user;
-  const { password } = req.body;
-  if (!password) {
-    return next(customError(401, "Please provide password"));
-  }
-
-  const userProfile = await UserProfile.findOne({ _id: userId });
-
-  const user = await User.findOne({ _id: userProfile.userId });
-  // check if password is correct
-  const isPasswordCorrect = await user.comparePassword(password);
-
-  if (!isPasswordCorrect) {
-    return next(customError(401, "Unauthorized"));
-  }
-
-  //grab password and image from incoming request body
-  const { username, profession, location, about, interest, height, gender } =
-    req.body;
-
-  const updatedDetails = {};
-
-  if (username) {
-    updatedDetails.username = username;
-  }
-  if (profession) {
-    updatedDetails.profession = profession;
-  }
-  if (location) {
-    updatedDetails.location = location;
-  }
-  if (about) {
-    updatedDetails.about = about;
-  }
-  if (height) {
-    updatedDetails.height = height;
-  }
-  if (gender) {
-    updatedDetails.gender = gender;
-  }
-  if (interest) {
-    updatedDetails["$push"] = { interest: interest };
-  }
-
-  if (req.files && req.files.photos) {
-    const uploadedUrls = [];
-
-    // Upload each file to Cloudinary
-    const uploadPromises = Object.values(req.files.photos).map((file) => {
-      return new Promise((resolve, reject) => {
-        cloudinary.uploader.upload(
-          file.tempFilePath,
-          {
-            use_filename: true,
-            folder: "dating-app",
-          },
-          (error, result) => {
-            if (error) {
-              reject(error);
-            } else {
-              uploadedUrls.push(result.secure_url);
-              resolve();
-            }
-          }
-        );
-      });
-    });
-
-    await Promise.all(uploadPromises);
-    updatedDetails["$push"] = { photos: uploadedUrls };
-  }
-
-  // grabbing user info
-  const { firstName, lastName, email, phoneNumber } = req.body;
-  const updatedUserInfo = {};
-
-  if (firstName) {
-    updatedUserInfo.firstName = firstName;
-  }
-  if (lastName) {
-    updatedUserInfo.lastName = lastName;
-  }
-  if (email) {
-    updatedUserInfo.email = email;
-  }
-  if (phoneNumber) {
-    updatedUserInfo.phoneNumber = phoneNumber;
-  }
-
   try {
-    // updating userProfile model
-    await UserProfile.findOneAndUpdate(
-      { _id: userId },
-      {
-        ...updatedDetails,
-      }
-    );
+    const { userId } = req.user;
+    const { password, ...userDetails } = req.body;
 
-    //updating user model
-    await User.findOneAndUpdate(
-      { _id: userProfile.userId },
-      {
-        ...updatedUserInfo,
-      }
-    );
+    await userService.validatePassword(userId, password);
 
-    return res.status(200).json({ message: "Details Updated Sucessfully!" });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Something went wrong",
+    const updatedProfileInfo = {};
+
+    const profileFields = [
+      "location",
+      "height",
+      "about",
+      "profession",
+      "interest",
+      "birthday",
+      "gender",
+    ];
+
+    profileFields.forEach((field) => {
+      if (field === "interest" && Array.isArray(updatedProfileInfo[field])) {
+        updatedProfileInfo["$addToSet"] = {
+          [field]: { ["$each"]: userDetails[field] },
+        };
+      } else {
+        updatedProfileInfo[field] = userDetails[field];
+      }
     });
+
+    if (req.files && req.files.image) {
+      updatedProfileInfo.image = await uploadService.uploadUserImage(
+        req.files.image.tempFilePath
+      );
+    }
+
+    if (req.files && req.files.photos) {
+      updatedProfileInfo.photos = await uploadService.uploadUserPhotos(
+        Object.values(req.files.photos)
+      );
+    }
+
+    const updatedUserInfo = {
+      firstName: userDetails.firstName,
+      lastName: userDetails.lastName,
+      email: userDetails.email,
+      phoneNumber: userDetails.phoneNumber,
+    };
+
+    await userService.updateUserProfile(userId, updatedProfileInfo);
+    await userService.updateUserModel(userId, updatedUserInfo);
+
+    return res.status(200).json({ message: "Details Updated Successfully!" });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -243,8 +185,16 @@ const sendOTP = async (req, res, next) => {
   const subject = "Here is your OTP";
   const text = `Please use this otp to verify your account. OTP: ${otp}`;
 
+  const { emailBody, emailText } = generateEmail(intro, user.firstName, otp);
+
   try {
-    const info = await sendEmail({ to: email, subject, text });
+    const info = await sendEmail({
+      to: email,
+      subject,
+      text,
+      text: emailText,
+      html: emailBody,
+    });
     const result = await OTP.create({ email, otp });
 
     res.status(201).json({

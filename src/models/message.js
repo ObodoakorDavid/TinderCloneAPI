@@ -4,13 +4,14 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
-    sentBy: {
+    sender: {
       type: mongoose.Types.ObjectId,
-      ref: "User",
+      ref: "UserProfile",
       required: true,
     },
     text: {
       type: String,
+      required: true,
     },
   },
   {

@@ -5,13 +5,17 @@ const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
+      trim: true,
     },
     lastName: {
       type: String,
+      trim: true,
     },
     email: {
       type: String,
       required: [true, "Please provide an email"],
+      trim: true,
+      lowercase: true,
       match: [
         /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
         "Please provide a valid email",
@@ -43,7 +47,7 @@ UserSchema.pre("save", async function (next) {
     return next();
   }
   const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password.toLowerCase(), salt);
   next();
 });
 

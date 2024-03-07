@@ -1,59 +1,57 @@
-const Chat = require("../models/chat");
+const chatService = require("../services/chatService");
 
-const startChat = async (req, res) => {
-  const { firstId, secondId } = req.body;
-
+const startChat = async (req, res, next) => {
   try {
-    const chat = await Chat.findOne({
-      members: { $all: [firstId, secondId] },
-    });
-
-    if (!chat) {
-      const newChat = await Chat.create({ members: [firstId, secondId] });
-      return res.status(200).json({ message: "Chat Created!", chat: newChat });
-    }
-
-    return res.status(200).json({ chat });
+    const participants = req.body.participants; // Adjust based on your request body
+    const newChat = await chatService.startChat(participants);
+    res.status(201).json({ chat: newChat });
   } catch (error) {
-    res.status(500).json({ error });
+    next(error);
   }
 };
 
-// ========================================
+// ================================
 
-const findUserChats = async (req, res) => {
-  const { userId } = req.params;
-
+const addMessageToChat = async (req, res, next) => {
   try {
-    const chats = await Chat.find({
-      members: { $in: [userId] },
-    });
-
-    return res.status(200).json({ chats });
+    const { chatId } = req.params;
+    const { sender, text } = req.body; // Adjust based on your request body
+    const newMessage = await chatService.addMessageToChat(chatId, sender, text);
+    res.status(201).json({ message: newMessage });
   } catch (error) {
-    res.status(500).json({ error });
+    next(error);
   }
 };
 
-// ========================================
+// ===================================
 
-const findChat = async (req, res) => {
-  const { chatId } = req.params;
-  console.log(chatId);
-
+const getUserChats = async (req, res, next) => {
   try {
-    const chat = await Chat.findOne({
-      _id: chatId,
-    });
-
-    if (!chat) {
-      return res.status(404).json({ message: "No chat found!" });
-    }
-
-    return res.status(200).json({ chat });
+    const { userId } = req.user;
+    console.log(userId);
+    // const { userId } = req.params;
+    const userChats = await chatService.getUserChats(userId);
+    res.status(200).json({ chats: userChats });
   } catch (error) {
-    res.status(500).json({ error });
+    next(error);
   }
 };
 
-module.exports = { startChat, findUserChats, findChat };
+// =======================================
+
+const getChatMessages = async (req, res, next) => {
+  try {
+    const { chatId } = req.params;
+    const messages = await chatService.getChatMessages(chatId);
+    res.status(200).json({ messages });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  startChat,
+  addMessageToChat,
+  getUserChats,
+  getChatMessages,
+};

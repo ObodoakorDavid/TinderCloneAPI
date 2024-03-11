@@ -93,18 +93,27 @@ const loginUser = async (req, res, next) => {
 //GET USER
 const getUser = async (req, res) => {
   const { userId } = req.user;
-  console.log(userId);
-  const userProfile = await UserProfile.findOne({ _id: userId });
 
-  if (!userProfile) {
-    res.status(404).json({ message: "User Doesn't Exist" });
+  try {
+    // Retrieve user profile with populated user information excluding certain fields
+    const userProfile = await UserProfile.findOne({ _id: userId }).populate({
+      path: "userId",
+      model: "User",
+      select: "-password -phoneNumber -role",
+    });
+
+    if (!userProfile) {
+      return res.status(404).json({ error: "User profile not found" });
+    }
+
+    res.status(200).json({
+      userProfile,
+      // Include other fields from userProfile as needed
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
-  console.log(userProfile);
-
-  res.status(200).json({
-    id: userProfile._id,
-    image: userProfile.image,
-  });
 };
 
 const getAllUsers = async (req, res) => {
@@ -165,10 +174,12 @@ const updateUser = async (req, res, next) => {
       phoneNumber: userDetails.phoneNumber,
     };
 
-    await userService.updateUserProfile(userId, updatedProfileInfo);
+    let data2 = await userService.updateUserProfile(userId, updatedProfileInfo);
     await userService.updateUserModel(userId, updatedUserInfo);
 
-    return res.status(200).json({ message: "Details Updated Successfully!" });
+    return res
+      .status(200)
+      .json({ message: "Details Updated Successfully!", data2 });
   } catch (error) {
     next(error);
   }

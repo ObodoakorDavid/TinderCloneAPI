@@ -5,8 +5,11 @@ const customError = require("../utils/customError");
 const updateUserProfile = async (userId, userDetails) => {
   try {
     // Updating userProfile model
-    await UserProfile.findOneAndUpdate({ _id: userId }, userDetails);
-    return { message: "Details Updated Successfully!" };
+    const userProfile = await UserProfile.findOneAndUpdate(
+      { _id: userId },
+      userDetails
+    );
+    return { message: "Details Updated Successfully!", userProfile };
   } catch (error) {
     throw error;
   }

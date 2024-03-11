@@ -93,17 +93,19 @@ const loginUser = async (req, res, next) => {
 //GET USER
 const getUser = async (req, res) => {
   const { userId } = req.user;
-  console.log(userId);
-  const userProfile = await UserProfile.findOne({ _id: userId });
+  const userProfile = await UserProfile.findOne({ _id: userId })
+    .populate({
+      path: "userId",
+      select: "firstName lastName",
+    })
+    .select("-__v -createdAt -updatedAt -isVerified -liked -starred");
 
   if (!userProfile) {
     res.status(404).json({ message: "User Doesn't Exist" });
   }
-  console.log(userProfile);
 
   res.status(200).json({
-    id: userProfile._id,
-    image: userProfile.image,
+    user: userProfile,
   });
 };
 

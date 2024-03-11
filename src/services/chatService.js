@@ -10,6 +10,14 @@ exports.startChat = async (participants) => {
     ) {
       throw new Error("Participants Id Not Valid");
     }
+
+    const existingChat = await Chat.findOne({
+      members: { $all: participants },
+    });
+
+    if (existingChat) {
+      return existingChat;
+    }
     const newChat = await Chat.create({
       members: participants,
       messages: [], // Initially, the chat may not have any messages
@@ -22,6 +30,9 @@ exports.startChat = async (participants) => {
 };
 
 exports.addMessageToChat = async (chatId, sender, text) => {
+  if (!validateMongoId(chatId)) {
+    throw new Error(`${chatId} is not a valid ID`);
+  }
   try {
     const newMessage = await Message.create({
       sender: sender, // Assuming sender is the user who sent the message
@@ -43,22 +54,38 @@ exports.addMessageToChat = async (chatId, sender, text) => {
 
 exports.getUserChats = async (userId) => {
   try {
-    const userChats = await Chat.find({ members: { $in: [userId] } }).populate({
-      path: "messages",
-      options: { sort: { createdAt: -1 }, limit: 1 },
-      populate: {
-        path: "sender",
-        select: "sender",
-        populate: { path: "userId", select: "firstName" },
-      },
-    });
+    const userChats = await Chat.find({ members: { $in: [userId] } })
+      .populate({
+        path: "members",
+        select: "image",
+      })
+      .populate({
+        path: "messages",
+        options: { sort: { createdAt: -1 }, limit: 1 },
+        populate: [
+          {
+            path: "sender",
+            select: "sender image",
+            populate: {
+              path: "userId",
+              select: "firstName",
+            },
+          },
+        ],
+      });
 
     const chatsWithLastMessage = userChats.map((chat) => {
       const lastMessage = chat.messages.length > 0 ? chat.messages[0] : null;
 
+      let otherUser = null;
+      if (lastMessage) {
+        otherUser = chat.members.find(
+          (member) => member._id.toString() !== userId.toString()
+        );
+      }
+
       return {
         chatId: chat._id,
-        // participants: chat.members,
         lastMessage: lastMessage
           ? {
               text: lastMessage.text,
@@ -66,6 +93,7 @@ exports.getUserChats = async (userId) => {
               createdAt: lastMessage.createdAt,
             }
           : null,
+        image: otherUser ? otherUser.image : null,
       };
     });
 
@@ -84,7 +112,7 @@ exports.getChatMessages = async (chatId) => {
       throw new Error("Chat not found");
     }
 
-    return chat.messages;
+    return chat;
   } catch (error) {
     throw new Error("Error retrieving chat messages: " + error.message);
   }

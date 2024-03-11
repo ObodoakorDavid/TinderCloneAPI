@@ -5,6 +5,7 @@ const cors = require("cors");
 const fileUpload = require("express-fileupload");
 
 const connectDB = require("./src/db/connect");
+const socketInitializer = require("./src/socket/socket");
 
 // Middlewares
 const notFound = require("./src/middlewares/notFound");
@@ -16,13 +17,14 @@ const likeRouter = require("./src/routes/like");
 const starRouter = require("./src/routes/star");
 const adminRouter = require("./src/routes/admin");
 const chatRouter = require("./src/routes/chat");
-const io = require("./src/socket/socket");
 
 const app = express();
+app.use(cors());
+const httpServer = require("http").Server(app);
+const io = socketInitializer(httpServer);
 const port = process.env.PORT || 4000;
 
 app.use(express.json());
-app.use(cors());
 app.use(
   fileUpload({
     useTempFiles: true,
@@ -46,8 +48,7 @@ const start = async () => {
   try {
     await connectDB(process.env.DB_URI);
     console.log(`DB Connected!`);
-    io.listen(5000, console.log(`Socket Live at PORT 5000`));
-    app.listen(port, console.log(`Server is listening at PORT:${port}`));
+    httpServer.listen(port, console.log(`Server is listening at PORT:${port}`));
   } catch (error) {
     console.log(error);
   }

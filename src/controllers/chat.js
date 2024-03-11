@@ -3,9 +3,11 @@ const chatService = require("../services/chatService");
 const startChat = async (req, res, next) => {
   try {
     const participants = req.body.participants; // Adjust based on your request body
+    console.log(participants);
     const newChat = await chatService.startChat(participants);
     res.status(201).json({ chat: newChat });
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
@@ -28,7 +30,7 @@ const addMessageToChat = async (req, res, next) => {
 const getUserChats = async (req, res, next) => {
   try {
     const { userId } = req.user;
-    console.log(userId);
+    // console.log(userId);
     // const { userId } = req.params;
     const userChats = await chatService.getUserChats(userId);
     res.status(200).json({ chats: userChats });
@@ -42,8 +44,8 @@ const getUserChats = async (req, res, next) => {
 const getChatMessages = async (req, res, next) => {
   try {
     const { chatId } = req.params;
-    const messages = await chatService.getChatMessages(chatId);
-    res.status(200).json({ messages });
+    const chat = await chatService.getChatMessages(chatId);
+    res.status(200).json({ chat });
   } catch (error) {
     next(error);
   }

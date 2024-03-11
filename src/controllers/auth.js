@@ -96,6 +96,11 @@ const getUser = async (req, res) => {
   console.log(userId);
   const userProfile = await UserProfile.findOne({ _id: userId });
 
+  if (!userProfile) {
+    res.status(404).json({ message: "User Doesn't Exist" });
+  }
+  console.log(userProfile);
+
   res.status(200).json({
     id: userProfile._id,
     image: userProfile.image,
@@ -116,7 +121,7 @@ const updateUser = async (req, res, next) => {
     const { userId } = req.user;
     const { password, ...userDetails } = req.body;
 
-    await userService.validatePassword(userId, password);
+    // await userService.validatePassword(userId, password);
 
     const updatedProfileInfo = {};
 
@@ -128,6 +133,7 @@ const updateUser = async (req, res, next) => {
       "interest",
       "birthday",
       "gender",
+      "jobTitle",
     ];
 
     profileFields.forEach((field) => {
@@ -185,7 +191,7 @@ const sendOTP = async (req, res, next) => {
   const subject = "Here is your OTP";
   const text = `Please use this otp to verify your account. OTP: ${otp}`;
   const intro =
-      "You received this email because you requested for an OTP on Duduconnect";
+    "You received this email because you requested for an OTP on Duduconnect";
 
   const { emailBody, emailText } = generateEmail(intro, user.firstName, otp);
 

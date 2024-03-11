@@ -5,7 +5,13 @@ const mongoose = require("mongoose");
 const chatSchema = new mongoose.Schema(
   {
     members: {
-      type: Array,
+      type: [
+        {
+          type: mongoose.Types.ObjectId,
+          ref: "UserProfile",
+          required: true,
+        },
+      ],
     },
     messages: [
       {

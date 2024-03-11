@@ -16,6 +16,9 @@ const UserProfileSchema = new mongoose.Schema(
     profession: {
       type: String,
     },
+    jobTitle: {
+      type: String,
+    },
     location: {
       type: String,
     },

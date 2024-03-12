@@ -30,6 +30,7 @@ exports.startChat = async (participants) => {
 };
 
 exports.addMessageToChat = async (chatId, sender, text) => {
+  console.log(sender);
   if (!validateMongoId(chatId)) {
     throw new Error(`${chatId} is not a valid ID`);
   }
@@ -39,14 +40,27 @@ exports.addMessageToChat = async (chatId, sender, text) => {
       text: text,
     });
 
+    // Query for the new message and populate the 'sender' field
+    const populatedMessage = await Message.findById(newMessage._id).populate({
+      path: "sender",
+      select: "userId",
+      populate: {
+        path: "userId",
+        select: "firstName",
+      },
+    });
+
     // Add the new message reference to the chat
     await Chat.findByIdAndUpdate(
       chatId,
-      { $push: { messages: newMessage._id } },
+      { $push: { messages: populatedMessage._id } },
       { new: true }
     );
 
-    return newMessage;
+    return {
+      ...populatedMessage._doc,
+      sender: populatedMessage.sender.userId.firstName,
+    };
   } catch (error) {
     throw new Error("Error adding message to chat: " + error.message);
   }

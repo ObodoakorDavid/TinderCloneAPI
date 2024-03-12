@@ -1,67 +1,40 @@
-const UserProfile = require("../models/userProfile");
-const customError = require("../utils/customError");
-const validateMongoId = require("../utils/validateMongoId");
+const likeService = require("../services/likeService");
 
 // Getting a User Likes
 const getUserLikes = async (req, res) => {
   const { userId } = req.user;
-  const UserProfile = await UserProfile.findOne({ _id: userId }).populate(
-    "liked",
-    "-password -image -interest -role -createdAt -updatedAt -__v -starred -liked"
-  );
-  res.status(200).json({ likes: UserProfile.liked });
+
+  try {
+    const likes = await likeService.getUserLikes(userId);
+    return res.status(200).json({ likes });
+  } catch (error) {
+    return res.status(404).json({ message: error.message });
+  }
 };
 
 // Liking a User
 const likeUser = async (req, res, next) => {
-  const { id } = req.params;
   const { userId } = req.user;
-
-  if (!validateMongoId(id)) {
-    return next(customError(400, `ID:${id} is not a valid Id`));
-  }
+  const { id } = req.params;
 
   try {
-    const userProfile = await UserProfile.findOneAndUpdate(
-      { _id: userId },
-      {
-        $addToSet: {
-          liked: id,
-        },
-      }
-    );
-    const likedUser = await UserProfile.findOne({ _id: id });
-
-    if (likedUser.liked.includes(userId)) {
-      return res.json({ message: "Liked!", isMatch: true });
-    }
-    res.status(200).json({ message: "Liked!", isMatch: false });
-  } catch (err) {
-    next(err);
+    const result = await likeService.likeUser(userId, id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
   }
 };
 
 //Unlikng a user
 const unLikeUser = async (req, res, next) => {
-  const { id } = req.params;
   const { userId } = req.user;
-
-  if (!validateMongoId(id)) {
-    return next(customError(400, `ID:${id} is not a valid Id`));
-  }
+  const { id } = req.params;
 
   try {
-    const userProfile = await UserProfile.findOneAndUpdate(
-      { _id: userId },
-      {
-        $pull: {
-          liked: id,
-        },
-      }
-    );
-    res.status(200).json({ message: "Removed from Likes!" });
-  } catch (err) {
-    next(err);
+    const result = await likeService.unlikeUser(userId, id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
   }
 };
 

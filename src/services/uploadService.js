@@ -1,7 +1,7 @@
 const cloudinary = require("../utils/cloudinaryConfig");
 const uploadImages = require("../utils/uploadImages");
 
-const uploadUserImage = async (tempFilePath) => {
+exports.uploadUserImage = async (tempFilePath) => {
   try {
     const { secure_url } = await cloudinary.uploader.upload(tempFilePath, {
       use_filename: true,
@@ -13,7 +13,7 @@ const uploadUserImage = async (tempFilePath) => {
   }
 };
 
-const uploadUserPhotos = async (photoFiles) => {
+exports.uploadUserPhotos = async (photoFiles) => {
   try {
     const uploadedUrls = await uploadImages(photoFiles);
     return uploadedUrls;
@@ -22,7 +22,3 @@ const uploadUserPhotos = async (photoFiles) => {
   }
 };
 
-module.exports = {
-  uploadUserImage,
-  uploadUserPhotos,
-};

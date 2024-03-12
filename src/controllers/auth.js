@@ -17,11 +17,9 @@ const registerUser = async (req, res, next) => {
 
   try {
     // create new user on the DB
-    const user = await User.create({ ...req.body });
-    const userProfile = await UserProfile.create({ userId: user._id });
-
-    // generate new token
-    // const token = userProfile.createJWT();
+    // const user = await User.create({ ...req.body });
+    // const userProfile = await UserProfile.create({ userId: user._id });
+    const { user, userProfile } = await userService.registerUser(req.body);
 
     //generating OTP
     const otp = generateOTP();
@@ -67,7 +65,7 @@ const loginUser = async (req, res, next) => {
     return next(customError(401, "No User with this Email"));
   }
 
-  const isPasswordCorrect = await user.comparePassword(password.toLowerCase());
+  const isPasswordCorrect = await user.comparePassword(password);
 
   console.log(user);
 

@@ -27,11 +27,11 @@ const UserProfileSchema = new mongoose.Schema(
     },
     interest: [{ type: String }],
     starred: {
-      type: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+      type: [{ type: mongoose.Types.ObjectId, ref: "UserProfile" }],
       default: [],
     },
     liked: {
-      type: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+      type: [{ type: mongoose.Types.ObjectId, ref: "UserProfile" }],
       default: [],
     },
     birthday: {

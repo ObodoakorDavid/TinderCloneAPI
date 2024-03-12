@@ -1,67 +1,42 @@
-const User = require("../models/user");
-const customError = require("../utils/customError");
-const validateMongoId = require("../utils/validateMongoId");
+const starService = require("../services/starService");
 
-// Getting a User Stars
-const getUserStars = async (req, res) => {
+const getUserStars = async (req, res, next) => {
   const { userId } = req.user;
-  const user = await User.findOne({ _id: userId }).populate(
-    "starred",
-    "-password -image -interest -role -createdAt -updatedAt -__v -starred -liked"
-  );
-  res.status(200).json({ starred: user.starred });
+
+  try {
+    const result = await starService.getUserStars(userId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
 };
 
-// Liking a User
 const starUser = async (req, res, next) => {
-  const { id } = req.params;
   const { userId } = req.user;
-
-  if (!validateMongoId(id)) {
-    return next(customError(400, `ID:${id} is not a valid Id`));
-  }
+  const { id } = req.params;
 
   try {
-    const user = await User.findOneAndUpdate(
-      { _id: userId },
-      {
-        $push: {
-          starred: id,
-        },
-      }
-    );
-    res.status(200).json({ message: "Starred!" });
-  } catch (err) {
-    next(err);
+    const result = await starService.starUser(userId, id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
   }
 };
 
-//Unlikng a user
 const unStarUser = async (req, res, next) => {
-  const { id } = req.params;
   const { userId } = req.user;
-
-  if (!validateMongoId(id)) {
-    return next(customError(400, `ID:${id} is not a valid Id`));
-  }
+  const { id } = req.params;
 
   try {
-    const user = await User.findOneAndUpdate(
-      { _id: userId },
-      {
-        $pull: {
-          starred: id,
-        },
-      }
-    );
-    res.status(200).json({ message: "Removed from Stars!" });
-  } catch (err) {
-    next(err);
+    const result = await starService.unStarUser(userId, id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
   }
 };
 
 module.exports = {
-  getUserStars,
   starUser,
-  unStarUser
+  unStarUser,
+  getUserStars,
 };

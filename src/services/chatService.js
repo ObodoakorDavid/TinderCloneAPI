@@ -120,7 +120,17 @@ exports.getUserChats = async (userId) => {
 exports.getChatMessages = async (chatId) => {
   try {
     const chat = await Chat.findById(chatId)
-      .populate("messages")
+      .populate({
+        path: "messages",
+        populate: {
+          path: "sender",
+          select: "_id userId",
+          populate: {
+            path: "userId",
+            select: "firstName",
+          },
+        },
+      })
       .sort({ createdAt: -1 });
     if (!chat) {
       throw new Error("Chat not found");

@@ -115,10 +115,19 @@ const getUser = async (req, res) => {
 };
 
 const getAllUsers = async (req, res) => {
-  const users = await UserProfile.find(
-    {},
-    { __v: 0, createdAt: 0, updatedAt: 0, isVerified: 0, userId: 0 }
-  );
+  const users = await UserProfile.find({})
+    .populate({
+      path: "userId",
+      select: ["firstName", "lastName"],
+    })
+    .select({
+      isVerified: 0,
+      createdAt: 0,
+      updatedAt: 0,
+      ["__v"]: 0,
+      liked: 0,
+      starred: 0,
+    });
   res.status(200).json({ users });
 };
 
@@ -144,9 +153,13 @@ const updateUser = async (req, res, next) => {
     ];
 
     profileFields.forEach((field) => {
-      if (field === "interest" && Array.isArray(updatedProfileInfo[field])) {
+      if (field === "interest" && typeof userDetails[field] === "string") {
         updatedProfileInfo["$addToSet"] = {
-          [field]: { ["$each"]: userDetails[field] },
+          [field]: {
+            ["$each"]: userDetails[field]
+              .split(",")
+              .map((eachInterest) => eachInterest.trim()),
+          },
         };
       } else {
         updatedProfileInfo[field] = userDetails[field];
@@ -159,9 +172,17 @@ const updateUser = async (req, res, next) => {
       );
     }
 
-    if (req.files && req.files.photos) {
+    const photos = ["photo1", "photo2", "photo3", "photo4", "photo5", "photo6"];
+
+    const images = photos
+      .filter((photo) => req.files[photo])
+      .map((photo) => req.files[photo]);
+
+    updatedProfileInfo.photos = images;
+
+    if (images.length > 0) {
       updatedProfileInfo.photos = await uploadService.uploadUserPhotos(
-        Object.values(req.files.photos)
+        Object.values(images)
       );
     }
 

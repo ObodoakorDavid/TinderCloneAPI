@@ -3,6 +3,7 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
+const helmet = require("helmet");
 
 const connectDB = require("./src/db/connect");
 const socketInitializer = require("./src/socket/socket");
@@ -17,13 +18,17 @@ const likeRouter = require("./src/routes/like");
 const starRouter = require("./src/routes/star");
 const adminRouter = require("./src/routes/admin");
 const chatRouter = require("./src/routes/chat");
+const userRouter = require("./src/routes/user");
+const blockRouter = require("./src/routes/block");
 
+//
 const app = express();
-app.use(cors());
 const httpServer = require("http").Server(app);
 const io = socketInitializer(httpServer);
 const port = process.env.PORT || 4000;
 
+app.use(cors());
+// app.use(helmet());
 app.use(express.json());
 app.use(
   fileUpload({
@@ -38,8 +43,10 @@ if (process.env.NODE_ENV === "dev") {
 app.use("/api/auth", authRouter);
 app.use("/api/like", likeRouter);
 app.use("/api/star", starRouter);
-app.use("/api/admin", adminRouter);
+app.use("/api/block", blockRouter);
+app.use("/api/users", userRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(notFound);
 app.use(error);

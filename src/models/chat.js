@@ -26,4 +26,7 @@ const chatSchema = new mongoose.Schema(
   }
 );
 
+// Index the 'members' field for faster query performance
+chatSchema.index({ members: 1 });
+
 module.exports = mongoose.model("Chat", chatSchema);

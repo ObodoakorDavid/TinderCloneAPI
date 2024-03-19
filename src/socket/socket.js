@@ -20,12 +20,13 @@ const handleMessage = (io, socket, data) => {
   }
 };
 
-// const handleUpdateChat = (io, socket, data) => {
-//   const user = onlineUsers.find((user) => user.userId === data.recipientId);
-//   if (user) {
-//     io.to(user.socketId).to(socket.id).emit("getMessage", data);
-//   }
-// };
+const handleIsTyping = (io, socket, data) => {
+  console.log(data);
+  const user = onlineUsers.find((user) => user.userId === data.recipientId);
+  if (user) {
+    io.to(user.socketId).to(socket.id).emit("isTyping", data);
+  }
+};
 
 const handleDisconnect = (io, socket) => {
   onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
@@ -47,7 +48,7 @@ const initializeSocket = (httpServer) => {
 
     socket.on("sendMessage", (data) => handleMessage(io, socket, data));
 
-    // socket.on("updateChat", (data) => handleUpdateChat(io, socket, data));
+    socket.on("isTyping", (data) => handleIsTyping(io, socket, data));
 
     socket.on("disconnect", () => handleDisconnect(io, socket));
   });

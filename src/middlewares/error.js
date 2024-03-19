@@ -15,18 +15,16 @@ const errorMiddleware = (err, req, res, next) => {
     err.message = `User with this email already exists`;
     statusCode = 400;
   }
-  // if (err.code === 11000 && err.keyValue.phoneNumber) {
-  //   err.message = `User with this phone number already exists`;
-  //   statusCode = 400;
-  // }
+  if (err.code === 11000 && err.keyValue.phoneNumber) {
+    err.message = `User with this phone number already exists`;
+    statusCode = 400;
+  }
 
   if (err.statusCode) {
     statusCode = err.statusCode;
   }
 
-  err.message = !err.message
-    ? '"Something went wrong, try again later"'
-    : err.message;
+  err.message = err.message || "Something went wrong, please try again later";
 
   res.status(statusCode).json({ message: err.message });
 };

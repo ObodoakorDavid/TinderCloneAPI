@@ -34,6 +34,14 @@ const UserProfileSchema = new mongoose.Schema(
       type: [{ type: mongoose.Types.ObjectId, ref: "UserProfile" }],
       default: [],
     },
+    blocked: {
+      type: [{ type: mongoose.Types.ObjectId, ref: "UserProfile" }],
+      default: [],
+    },
+    disLiked: {
+      type: [{ type: mongoose.Types.ObjectId, ref: "UserProfile" }],
+      default: [],
+    },
     birthday: {
       type: String,
     },

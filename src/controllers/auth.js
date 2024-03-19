@@ -114,23 +114,6 @@ const getUser = async (req, res) => {
   }
 };
 
-const getAllUsers = async (req, res) => {
-  const users = await UserProfile.find({})
-    .populate({
-      path: "userId",
-      select: ["firstName", "lastName"],
-    })
-    .select({
-      isVerified: 0,
-      createdAt: 0,
-      updatedAt: 0,
-      ["__v"]: 0,
-      liked: 0,
-      starred: 0,
-    });
-  res.status(200).json({ users });
-};
-
 //UPDATE USER
 const updateUser = async (req, res, next) => {
   try {
@@ -337,7 +320,6 @@ module.exports = {
   updateUser,
   sendOTP,
   verifyOTP,
-  getAllUsers,
   forgotPassword,
   resetPassword,
 };

@@ -8,7 +8,6 @@ const {
   updateUser,
   sendOTP,
   verifyOTP,
-  getAllUsers,
   forgotPassword,
   resetPassword,
 } = require("../controllers/auth");
@@ -18,11 +17,10 @@ const { auth } = require("../middlewares/auth");
 router.route("/register").post(registerUser).all(methodNotAllowed);
 router.route("/login").post(loginUser).all(methodNotAllowed);
 router
-  .route("/user")
+  .route("/")
   .get(auth, getUser)
   .patch(auth, updateUser)
   .all(methodNotAllowed);
-router.route("/users").get(getAllUsers).all(methodNotAllowed);
 
 router.route("/send-otp").post(sendOTP).all(methodNotAllowed);
 router.route("/verify-otp").post(verifyOTP).all(methodNotAllowed);

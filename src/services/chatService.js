@@ -46,7 +46,7 @@ exports.addMessageToChat = async (chatId, sender, text) => {
       select: "userId",
       populate: {
         path: "userId",
-        select: "firstName",
+        select: "firstName lastName",
       },
     });
 
@@ -56,11 +56,7 @@ exports.addMessageToChat = async (chatId, sender, text) => {
       { $push: { messages: populatedMessage._id } },
       { new: true }
     );
-
-    return {
-      ...populatedMessage._doc,
-      sender: populatedMessage.sender.userId.firstName,
-    };
+    return populatedMessage;
   } catch (error) {
     throw new Error("Error adding message to chat: " + error.message);
   }
@@ -69,9 +65,14 @@ exports.addMessageToChat = async (chatId, sender, text) => {
 exports.getUserChats = async (userId) => {
   try {
     const userChats = await Chat.find({ members: { $in: [userId] } })
+      .select("_id members messages")
       .populate({
         path: "members",
         select: "image",
+        populate: {
+          path: "userId",
+          select: "firstName lastName",
+        },
       })
       .populate({
         path: "messages",
@@ -87,16 +88,17 @@ exports.getUserChats = async (userId) => {
           },
         ],
       });
+    // return userChats;
+    console.log(userChats);
 
     const chatsWithLastMessage = userChats.map((chat) => {
       const lastMessage = chat.messages.length > 0 ? chat.messages[0] : null;
 
-      let otherUser = null;
-      if (lastMessage) {
-        otherUser = chat.members.find(
-          (member) => member._id.toString() !== userId.toString()
-        );
-      }
+      let otherUser = chat.members.find(
+        (member) => member._id.toString() !== userId.toString()
+      );
+
+      console.log(otherUser);
 
       return {
         chatId: chat._id,
@@ -107,7 +109,7 @@ exports.getUserChats = async (userId) => {
               createdAt: lastMessage.createdAt,
             }
           : null,
-        image: otherUser ? otherUser.image : null,
+        otherUser: otherUser || null,
       };
     });
 
@@ -118,6 +120,11 @@ exports.getUserChats = async (userId) => {
 };
 
 exports.getChatMessages = async (chatId) => {
+  if (!validateMongoId(chatId)) {
+    const error = new Error(`${chatId} is not a valid ID`);
+    error.statusCode = 400;
+    throw error;
+  }
   try {
     const chat = await Chat.findById(chatId)
       .populate({

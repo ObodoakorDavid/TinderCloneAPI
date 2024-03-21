@@ -24,6 +24,8 @@ const errorMiddleware = (err, req, res, next) => {
     statusCode = err.statusCode;
   }
 
+  // console.error(err);
+
   err.message = err.message || "Something went wrong, please try again later";
 
   res.status(statusCode).json({ message: err.message });

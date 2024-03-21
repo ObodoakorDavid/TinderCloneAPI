@@ -141,7 +141,7 @@ const updateUser = async (req, res, next) => {
           [field]: {
             ["$each"]: userDetails[field]
               .split(",")
-              .map((eachInterest) => eachInterest.trim()),
+              .map((eachInterest) => eachInterest.toLowerCase().trim()),
           },
         };
       } else {
@@ -155,18 +155,28 @@ const updateUser = async (req, res, next) => {
       );
     }
 
-    const photos = ["photo1", "photo2", "photo3", "photo4", "photo5", "photo6"];
+    if (req.files) {
+      console.log(req.files);
+      const photos = [
+        "photo1",
+        "photo2",
+        "photo3",
+        "photo4",
+        "photo5",
+        "photo6",
+      ];
 
-    const images = photos
-      .filter((photo) => req.files[photo])
-      .map((photo) => req.files[photo]);
+      const images = photos
+        .filter((photo) => req.files[photo])
+        .map((photo) => req.files[photo]);
 
-    updatedProfileInfo.photos = images;
+      updatedProfileInfo.photos = images;
 
-    if (images.length > 0) {
-      updatedProfileInfo.photos = await uploadService.uploadUserPhotos(
-        Object.values(images)
-      );
+      if (images.length > 0) {
+        updatedProfileInfo.photos = await uploadService.uploadUserPhotos(
+          Object.values(images)
+        );
+      }
     }
 
     const updatedUserInfo = {

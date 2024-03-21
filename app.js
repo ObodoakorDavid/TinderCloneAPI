@@ -57,7 +57,8 @@ const start = async () => {
     console.log(`DB Connected!`);
     httpServer.listen(port, console.log(`Server is listening at PORT:${port}`));
   } catch (error) {
-    console.log(error);
+    // console.error(error);
+    console.log(`Couldn't Connect Because of ${error.message}`);
   }
 };
 

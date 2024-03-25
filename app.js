@@ -20,6 +20,7 @@ const adminRouter = require("./src/routes/admin");
 const chatRouter = require("./src/routes/chat");
 const userRouter = require("./src/routes/user");
 const blockRouter = require("./src/routes/block");
+const { isAdmin, auth } = require("./src/middlewares/auth");
 
 //
 const app = express();
@@ -40,13 +41,17 @@ app.use(
 if (process.env.NODE_ENV === "dev") {
   app.use(morgan("dev"));
 }
+
+// Routes
 app.use("/api/auth", authRouter);
-app.use("/api/like", likeRouter);
-app.use("/api/star", starRouter);
-app.use("/api/block", blockRouter);
-app.use("/api/users", userRouter);
-app.use("/api/chat", chatRouter);
-app.use("/api/admin", adminRouter);
+app.use("/api/like", auth, likeRouter);
+app.use("/api/star", auth, starRouter);
+app.use("/api/block", auth, blockRouter);
+app.use("/api/users", auth, userRouter);
+app.use("/api/chat", auth, chatRouter);
+
+// Admin Routes
+app.use("/api/admin", auth, isAdmin, adminRouter);
 
 app.use(notFound);
 app.use(error);

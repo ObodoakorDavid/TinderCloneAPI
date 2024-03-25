@@ -4,11 +4,7 @@ const methodNotAllowed = require("../utils/methodNotAllowed");
 const { auth } = require("../middlewares/auth");
 const { getUserStars, starUser, unStarUser } = require("../controllers/star");
 
-router.route("/").get(auth, getUserStars).all(methodNotAllowed);
-router
-  .route("/:id")
-  .post(auth, starUser)
-  .delete(auth, unStarUser)
-  .all(methodNotAllowed);
+router.route("/").get(getUserStars).all(methodNotAllowed);
+router.route("/:id").post(starUser).delete(unStarUser).all(methodNotAllowed);
 
 module.exports = router;

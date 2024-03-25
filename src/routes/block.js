@@ -11,8 +11,8 @@ const {
 router.route("/").get(auth, getUserBlocks).all(methodNotAllowed);
 router
   .route("/:id")
-  .post(auth, blockUser)
-  .delete(auth, unBlockUser)
+  .post(blockUser)
+  .delete(unBlockUser)
   .all(methodNotAllowed);
 
 module.exports = router;

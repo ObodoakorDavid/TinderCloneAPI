@@ -7,7 +7,7 @@ const router = express.Router();
 router
   .route("/")
   .post(chatController.startChat)
-  .get(auth, chatController.getUserChats)
+  .get(chatController.getUserChats)
   .all(methodNotAllowed);
 
 router

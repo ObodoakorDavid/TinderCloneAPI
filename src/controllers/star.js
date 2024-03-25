@@ -1,39 +1,25 @@
+const asyncWrapper = require("../middlewares/asyncWrapper");
 const starService = require("../services/starService");
 
-const getUserStars = async (req, res, next) => {
+const getUserStars = asyncWrapper(async (req, res, next) => {
   const { userId } = req.user;
+  const result = await starService.getUserStars(userId);
+  res.status(200).json(result);
+});
 
-  try {
-    const result = await starService.getUserStars(userId);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const starUser = async (req, res, next) => {
+const starUser = asyncWrapper(async (req, res, next) => {
   const { userId } = req.user;
   const { id } = req.params;
+  const result = await starService.starUser(userId, id);
+  res.status(200).json(result);
+});
 
-  try {
-    const result = await starService.starUser(userId, id);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const unStarUser = async (req, res, next) => {
+const unStarUser = asyncWrapper(async (req, res, next) => {
   const { userId } = req.user;
   const { id } = req.params;
-
-  try {
-    const result = await starService.unStarUser(userId, id);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-};
+  const result = await starService.unStarUser(userId, id);
+  res.status(200).json(result);
+});
 
 module.exports = {
   starUser,

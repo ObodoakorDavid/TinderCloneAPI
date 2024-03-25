@@ -16,9 +16,6 @@ const registerUser = async (req, res, next) => {
   }
 
   try {
-    // create new user on the DB
-    // const user = await User.create({ ...req.body });
-    // const userProfile = await UserProfile.create({ userId: user._id });
     const { user, userProfile } = await userService.registerUser(req.body);
 
     //generating OTP

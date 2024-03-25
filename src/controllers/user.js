@@ -7,7 +7,7 @@ const getAllUsers = async (req, res) => {
   const users = await UserProfile.find({})
     .populate({
       path: "userId",
-      select: ["firstName", "lastName"],
+      select: ["firstName", "lastName", "email"],
     })
     .select({
       isVerified: 0,

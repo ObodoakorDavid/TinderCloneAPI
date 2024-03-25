@@ -1,42 +1,28 @@
+const asyncWrapper = require("../middlewares/asyncWrapper");
 const blockService = require("../services/blockService");
 
 // Getting a User Blocks
-const getUserBlocks = async (req, res) => {
+const getUserBlocks = asyncWrapper(async (req, res) => {
   const { userId } = req.user;
-
-  try {
-    const blocks = await blockService.getUserBlocks(userId);
-    res.status(200).json({ blocks });
-  } catch (error) {
-    res.status(404).json({ message: error.message });
-  }
-};
+  const blocks = await blockService.getUserBlocks(userId);
+  res.status(200).json({ blocks });
+});
 
 // Blocking a User
-const blockUser = async (req, res, next) => {
+const blockUser = asyncWrapper(async (req, res, next) => {
   const { userId } = req.user;
   const { id } = req.params;
-
-  try {
-    const result = await blockService.blockUser(userId, id);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-};
+  const result = await blockService.blockUser(userId, id);
+  res.status(200).json(result);
+});
 
 // Unblocking a user
-const unBlockUser = async (req, res, next) => {
+const unBlockUser = asyncWrapper(async (req, res, next) => {
   const { userId } = req.user;
   const { id } = req.params;
-
-  try {
-    const result = await blockService.unblockUser(userId, id);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-};
+  const result = await blockService.unblockUser(userId, id);
+  res.status(200).json(result);
+});
 
 module.exports = {
   getUserBlocks,

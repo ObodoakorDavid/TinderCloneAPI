@@ -10,7 +10,7 @@ const {
 } = require("../controllers/user");
 
 router.route("/").get(getAllUsers).all(methodNotAllowed);
-router.route("/matches").get(auth, getAllMatches).all(methodNotAllowed);
+router.route("/matches").get(getAllMatches).all(methodNotAllowed);
 router.route("/:id").get(getSingleUser).all(methodNotAllowed);
 
 module.exports = router;

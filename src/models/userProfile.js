@@ -59,6 +59,14 @@ const UserProfileSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    lastActivityTimestamp: {
+      type: Date,
+      default: Date.now, // Set to the current timestamp when a new user profile is created
+    },
+    isSuspended: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

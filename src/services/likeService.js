@@ -1,6 +1,7 @@
 const UserProfile = require("../models/userProfile");
 const customError = require("../utils/customError");
 const validateMongoId = require("../utils/validateMongoId");
+const Match = require("../models/match");
 
 exports.getUserLikes = async (userId) => {
   try {
@@ -48,9 +49,17 @@ exports.likeUser = async (userId, likedUserId) => {
 
     const likedUser = await UserProfile.findOne({ _id: likedUserId });
 
+    let isMatch = false;
+
+    //  Creates A Match if Both Users like Each Other
+    if (likedUser.liked.includes(userId)) {
+      isMatch = true;
+      await Match.create({ members: [userId, likedUser._id] });
+    }
+
     return {
       message: "Liked!",
-      isMatch: likedUser.liked.includes(userId),
+      isMatch,
     };
   } catch (error) {
     throw error;
@@ -67,6 +76,8 @@ exports.unlikeUser = async (userId, unlikedUserId) => {
       { _id: userId },
       { $pull: { liked: unlikedUserId } }
     );
+    // Removes the match
+    await Match.findOneAndDelete({ members: [userId, unlikedUserId] });
 
     return { message: "Removed from Likes!" };
   } catch (error) {

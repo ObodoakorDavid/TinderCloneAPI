@@ -6,6 +6,7 @@ const asyncWrapper = require("./asyncWrapper");
 
 const auth = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  console.log(req.headers);
   console.log(authHeader);
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return next(customError(401, "No Token Provided"));

@@ -14,13 +14,13 @@ const getSuspendedUsers = asyncWrapper(async (req, res) => {
 });
 
 const suspendUser = asyncWrapper(async (req, res) => {
-  const { userId } = req.user;
+  const { userId } = req.params;
   const result = await AdminService.suspendUser(userId);
   res.status(200).json(result);
 });
 
 const unSuspendUser = asyncWrapper(async (req, res) => {
-  const { userId } = req.user;
+  const { userId } = req.params;
   const result = await AdminService.unSuspendUser(userId);
   res.status(200).json(result);
 });

@@ -14,7 +14,6 @@ const excludedFields = {
   starred: 0,
   disLiked: 0,
   blocked: 0,
-  isSuspended: 0,
   lastActivityTimestamp: 0,
 };
 
@@ -37,13 +36,17 @@ exports.getAllUsers = async (userId) => {
 
 exports.getSuspendedUsers = async (userId) => {
   try {
-    const users = await UserProfile.find(
-      { _id: { $ne: userId }, isSuspended: true },
-      excludedFields
-    ).populate({
-      path: "userId",
-      select: excludedFields,
-    });
+    const users = await UserProfile.find({
+      _id: { $ne: userId },
+      isSuspended: true,
+    })
+      .populate({
+        path: "userId",
+        select: excludedFields,
+      })
+      .select(excludedFields);
+
+    console.log(users);
 
     return users;
   } catch (error) {
@@ -65,11 +68,13 @@ exports.suspendUser = async (userId) => {
       { isSuspended: true }
     );
 
+    console.log(userProfile);
+
     if (!userProfile) {
       throw customError(404, "User not found");
     }
 
-    return { message: "User Suspended" };
+    return { message: "User Suspended", userProfile };
   } catch (error) {
     throw error;
   }

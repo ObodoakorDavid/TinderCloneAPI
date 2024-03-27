@@ -6,8 +6,8 @@ const asyncWrapper = require("./asyncWrapper");
 
 const auth = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  console.log(req.headers);
-  console.log(authHeader);
+  // console.log(req.headers);
+  // console.log(authHeader);
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return next(customError(401, "No Token Provided"));
   }
@@ -31,7 +31,7 @@ const isAdmin = asyncWrapper(async (req, res, next) => {
     path: "userId",
   });
 
-  console.log(userProfile);
+  // console.log(userProfile);
 
   if (!userProfile || userProfile.userId.role !== "admin") {
     return next(customError(401, "Unauthorized"));

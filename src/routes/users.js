@@ -7,7 +7,7 @@ const {
   getSingleUser,
   getAllUsers,
   getAllMatches,
-} = require("../controllers/user");
+} = require("../controllers/users");
 
 router.route("/").get(getAllUsers).all(methodNotAllowed);
 router.route("/matches").get(getAllMatches).all(methodNotAllowed);

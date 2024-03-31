@@ -80,7 +80,7 @@ const UserProfileSchema = new mongoose.Schema(
 // });
 
 UserProfileSchema.methods.createJWT = function () {
-  return jwt.sign({ userId: this._id }, process.env.JWT_SECRET, {
+  return jwt.sign({ userId: this.userId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_LIFETIME,
   });
 };

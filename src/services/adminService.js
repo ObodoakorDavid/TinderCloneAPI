@@ -18,103 +18,79 @@ const excludedFields = {
 };
 
 exports.getAllUsers = async (userId) => {
-  try {
-    const users = await UserProfile.find(
-      { _id: { $ne: userId } },
-      excludedFields
-    ).populate({
-      path: "userId",
-      select: excludedFields,
-    });
+  const users = await UserProfile.find(
+    { userId: { $ne: userId } },
+    excludedFields
+  ).populate({
+    path: "userId",
+    select: excludedFields,
+  });
 
-    return users;
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw new Error("Error fetching users");
-  }
+  return users;
 };
 
 exports.getSuspendedUsers = async (userId) => {
-  try {
-    const users = await UserProfile.find({
-      _id: { $ne: userId },
-      isSuspended: true,
+  const users = await UserProfile.find({
+    userId: { $ne: userId },
+    isSuspended: true,
+  })
+    .populate({
+      path: "userId",
+      select: excludedFields,
     })
-      .populate({
-        path: "userId",
-        select: excludedFields,
-      })
-      .select(excludedFields);
+    .select(excludedFields);
 
-    console.log(users);
-
-    return users;
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw new Error("Error fetching users");
-  }
+  return users;
 };
 
 exports.suspendUser = async (userId) => {
-  try {
-    if (!validateMongoId(userId)) {
-      throw customError(400, `ID:${userId} is not a valid Id`);
-    }
-
-    const userProfile = await UserProfile.findOneAndUpdate(
-      {
-        _id: userId,
-      },
-      { isSuspended: true }
-    );
-
-    console.log(userProfile);
-
-    if (!userProfile) {
-      throw customError(404, "User not found");
-    }
-
-    return { message: "User Suspended", userProfile };
-  } catch (error) {
-    throw error;
+  if (!validateMongoId(userId)) {
+    throw customError(400, `ID:${userId} is not a valid Id`);
   }
+
+  const userProfile = await UserProfile.findOneAndUpdate(
+    {
+      userId,
+    },
+    { isSuspended: true }
+  );
+
+  console.log(userProfile);
+
+  if (!userProfile) {
+    throw customError(404, "User not found");
+  }
+
+  return { message: "User Suspended", userProfile };
 };
 
 exports.unSuspendUser = async (userId) => {
-  try {
-    if (!validateMongoId(userId)) {
-      throw customError(400, `ID:${userId} is not a valid Id`);
-    }
-
-    const userProfile = await UserProfile.findOneAndUpdate(
-      {
-        _id: userId,
-      },
-      { isSuspended: false }
-    );
-
-    if (!userProfile) {
-      throw customError(404, "User not found");
-    }
-
-    return { message: "User Unsuspended" };
-  } catch (error) {
-    throw error;
+  if (!validateMongoId(userId)) {
+    throw customError(400, `ID:${userId} is not a valid Id`);
   }
+
+  const userProfile = await UserProfile.findOneAndUpdate(
+    {
+      userId,
+    },
+    { isSuspended: false }
+  );
+
+  if (!userProfile) {
+    throw customError(404, "User not found");
+  }
+
+  return { message: "User Unsuspended" };
 };
 
 exports.getAllMatches = async (userId) => {
-  try {
-    const matches = await Match.find({ _id: { $ne: userId } }).populate({
-      path: "members",
+  const matches = await Match.find({ _id: { $ne: userId } }).populate({
+    path: "members",
+    select: excludedFields,
+    populate: {
+      path: "userId",
       select: excludedFields,
-      populate: {
-        path: "userId",
-        select: excludedFields,
-      },
-    });
-    return matches;
-  } catch (error) {
-    throw error;
-  }
+    },
+  });
+  return matches;
 };

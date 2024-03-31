@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const customError = require("../utils/customError");
-const User = require("../models/user");
+const User = require("../models/users");
 const UserProfile = require("../models/userProfile");
 const asyncWrapper = require("./asyncWrapper");
 
@@ -27,13 +27,9 @@ const auth = (req, res, next) => {
 
 const isAdmin = asyncWrapper(async (req, res, next) => {
   const { userId } = req.user;
-  const userProfile = await UserProfile.findOne({ _id: userId }).populate({
-    path: "userId",
-  });
+  const user = await User.findById(userId);
 
-  // console.log(userProfile);
-
-  if (!userProfile || userProfile.userId.role !== "admin") {
+  if (!user || user.role !== "admin") {
     return next(customError(401, "Unauthorized"));
   }
 

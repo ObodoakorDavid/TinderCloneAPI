@@ -18,7 +18,7 @@ const likeRouter = require("./src/routes/like");
 const starRouter = require("./src/routes/star");
 const adminRouter = require("./src/routes/admin");
 const chatRouter = require("./src/routes/chat");
-const userRouter = require("./src/routes/user");
+const userRouter = require("./src/routes/users");
 const blockRouter = require("./src/routes/block");
 const { isAdmin, auth } = require("./src/middlewares/auth");
 

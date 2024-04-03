@@ -31,7 +31,6 @@ async function getAllUsers(userId) {
       createdAt: 0,
       updatedAt: 0,
       ["__v"]: 0,
-      liked: 0,
       starred: 0,
     });
   return users;

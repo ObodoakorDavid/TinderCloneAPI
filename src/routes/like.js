@@ -5,6 +5,6 @@ const { getUserLikes, likeUser, unLikeUser } = require("../controllers/like");
 const { auth } = require("../middlewares/auth");
 
 router.route("/").get(getUserLikes).all(methodNotAllowed);
-router.route("/:id").get(likeUser).delete(unLikeUser).all(methodNotAllowed);
+router.route("/:id").post(likeUser).delete(unLikeUser).all(methodNotAllowed);
 
 module.exports = router;

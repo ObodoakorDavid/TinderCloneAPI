@@ -31,10 +31,24 @@ const getAllMatches = asyncWrapper(async (req, res) => {
   res.status(200).json(result);
 });
 
+const getRecentUsers = asyncWrapper(async (req, res) => {
+  const { userId } = req.user;
+  const users = await AdminService.getRecentUsers(userId);
+  res.status(200).json({ users });
+});
+
+const getActiveUsers = asyncWrapper(async (req, res) => {
+  const { userId } = req.user;
+  const users = await AdminService.getActiveUsers(userId);
+  res.status(200).json({ users });
+});
+
 module.exports = {
   getAllUsers,
   getSuspendedUsers,
   suspendUser,
   unSuspendUser,
   getAllMatches,
+  getRecentUsers,
+  getActiveUsers,
 };

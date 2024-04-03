@@ -94,3 +94,29 @@ exports.getAllMatches = async (userId) => {
   });
   return matches;
 };
+
+exports.getRecentUsers = async (userId) => {
+  const recentUsers = await UserProfile.find(
+    { userId: { $ne: userId } },
+    excludedFields
+  )
+    .populate({
+      path: "userId",
+      select: excludedFields,
+    })
+    .sort({ createdAt: -1 });
+  return recentUsers;
+};
+
+exports.getActiveUsers = async (userId) => {
+  const activeUsers = await UserProfile.find(
+    { userId: { $ne: userId } },
+    excludedFields
+  )
+    .populate({
+      path: "userId",
+      select: excludedFields,
+    })
+    .sort({ lastActivityTimestamp: -1 });
+  return activeUsers;
+};

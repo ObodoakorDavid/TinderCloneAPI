@@ -73,6 +73,10 @@ const loginUser = asyncWrapper(async (req, res, next) => {
     throw customError(401, "Email not verified!");
   }
 
+  // Update lastActivityTimestamp in the userProfile document
+  userProfile.lastActivityTimestamp = new Date(); // Set current date and time
+  await userProfile.save(); // Save the updated userProfile document
+
   //generate new token
   const token = userProfile.createJWT();
 

@@ -2,6 +2,12 @@ const UserProfile = require("../models/userProfile");
 const User = require("../models/users");
 const customError = require("../utils/customError");
 
+exports.registerUser = async (userData) => {
+  const user = await User.create({ ...userData });
+  const userProfile = await UserProfile.create({ userId: user._id });
+  return { user, userProfile };
+};
+
 exports.updateUserProfile = async (userId, userDetails) => {
   // Updating userProfile model
   const userProfile = await UserProfile.findOneAndUpdate(
@@ -32,10 +38,4 @@ exports.validatePassword = async (userId, password) => {
   if (!isPasswordCorrect) {
     throw customError(401, "Unauthorized");
   }
-};
-
-exports.registerUser = async (userData) => {
-  const user = await User.create({ ...userData });
-  const userProfile = await UserProfile.create({ userId: user._id });
-  return { user, userProfile };
 };

@@ -38,7 +38,10 @@ exports.likeUser = async (userId, likedUserId) => {
 
   await UserProfile.updateOne(
     { userId },
-    { $addToSet: { liked: likedUserId } }
+    {
+      $addToSet: { liked: likedUserId },
+      $pull: { disLiked: likedUserId },
+    }
   );
 
   const likedUser = await UserProfile.findOne({ _id: likedUserId });

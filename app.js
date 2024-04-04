@@ -15,6 +15,7 @@ const error = require("./src/middlewares/error");
 // Routes
 const authRouter = require("./src/routes/auth");
 const likeRouter = require("./src/routes/like");
+const dislikeRouter = require("./src/routes/dislike");
 const starRouter = require("./src/routes/star");
 const adminRouter = require("./src/routes/admin");
 const chatRouter = require("./src/routes/chat");
@@ -45,6 +46,7 @@ if (process.env.NODE_ENV === "dev") {
 // Routes
 app.use("/api/auth", authRouter);
 app.use("/api/like", auth, likeRouter);
+app.use("/api/dislike", auth, dislikeRouter);
 app.use("/api/star", auth, starRouter);
 app.use("/api/block", auth, blockRouter);
 app.use("/api/users", auth, userRouter);

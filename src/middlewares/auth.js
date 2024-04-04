@@ -17,7 +17,7 @@ const auth = (req, res, next) => {
     req.user = { userId: payload.userId, username: payload.username };
     next();
   } catch (error) {
-    // console.log(error.message);
+    console.log(error.message);
     if (error.message === "jwt expired") {
       return next(customError(401, "Token Expired"));
     }

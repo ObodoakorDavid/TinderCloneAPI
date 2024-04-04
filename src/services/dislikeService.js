@@ -1,7 +1,6 @@
 const UserProfile = require("../models/userProfile");
 const customError = require("../utils/customError");
 const validateMongoId = require("../utils/validateMongoId");
-const Match = require("../models/match");
 
 exports.getUserDislikes = async (userId) => {
   const userProfile = await UserProfile.findOne({ userId })

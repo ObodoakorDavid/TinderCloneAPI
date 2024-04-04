@@ -10,7 +10,7 @@ exports.getUserLikes = async (userId) => {
       select: "image interest",
       populate: {
         path: "userId",
-        select: "-_id firstName lastName",
+        select: "firstName lastName",
       },
     })
     .select("liked");

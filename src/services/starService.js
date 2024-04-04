@@ -3,10 +3,16 @@ const customError = require("../utils/customError");
 const validateMongoId = require("../utils/validateMongoId");
 
 exports.getUserStars = async (userId) => {
-  const userProfile = await UserProfile.findOne({ userId }).populate(
-    "starred",
-    "-password -image -interest -role -createdAt -updatedAt -__v -starred -liked"
-  );
+  const userProfile = await UserProfile.findOne({ userId })
+    .populate({
+      path: "starred",
+      select: "image",
+      populate: {
+        path: "userId",
+        select: "firstName lastName",
+      },
+    })
+    .select("starred");
 
   return { starred: userProfile.starred };
 };

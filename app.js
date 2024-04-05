@@ -5,7 +5,7 @@ const cors = require("cors");
 const fileUpload = require("express-fileupload");
 const helmet = require("helmet");
 
-const connectDB = require("./src/db/connect");
+const connectDB = require("./src/config/connect");
 const socketInitializer = require("./src/socket/socket");
 
 // Middlewares

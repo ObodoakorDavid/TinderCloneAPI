@@ -6,16 +6,16 @@ exports.getUserDislikes = async (userId) => {
   const userProfile = await UserProfile.findOne({ userId })
     .populate({
       path: "disLiked",
-      select: "image interest",
+      select: "image interest userId",
       populate: {
         path: "userId",
-        select: "-_id firstName lastName",
+        select: "firstName lastName",
       },
     })
     .select("disliked");
 
   if (!userProfile) {
-    throw new Error("User Doesn't Exist");
+    throw customError(404, "User Doesn't Exist");
   }
 
   return userProfile.disLiked;
@@ -35,11 +35,19 @@ exports.dislikeUser = async (userId, dislikedUserId) => {
     throw customError(400, "You already disliked this user!");
   }
 
+  const dislikedUserProfile = await UserProfile.findOne({
+    userId: dislikedUserId,
+  });
+
+  if (!dislikedUserProfile) {
+    throw customError(400, `No User with ID:${starredUserId}`);
+  }
+
   await UserProfile.updateOne(
     { userId },
     {
-      $addToSet: { disLiked: dislikedUserId },
-      $pull: { liked: dislikedUserId },
+      $addToSet: { disLiked: dislikedUserProfile._id },
+      $pull: { liked: dislikedUserProfile._id },
     }
   );
 
@@ -51,9 +59,23 @@ exports.undislikeUser = async (userId, undislikedUserId) => {
     throw customError(400, `ID:${undislikedUserId} is not a valid Id`);
   }
 
+  const userProfile = await UserProfile.findOne({ userId });
+
+  if (!userProfile) {
+    throw customError(404, "User profile not found");
+  }
+
+  const undislikedUserProfile = await UserProfile.findOne({
+    userId: undislikedUserId,
+  });
+
+  if (!undislikedUserProfile) {
+    throw customError(400, `No User with ID:${undislikedUserId}`);
+  }
+
   await UserProfile.updateOne(
     { userId },
-    { $pull: { disLiked: undislikedUserId } }
+    { $pull: { disLiked: undislikedUserProfile._id } }
   );
 
   return { message: "Removed from Dislikes!" };

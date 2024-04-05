@@ -7,16 +7,17 @@ exports.getUserLikes = async (userId) => {
   const userProfile = await UserProfile.findOne({ userId })
     .populate({
       path: "liked",
-      select: "image interest",
+      select: "image interest userId",
       populate: {
         path: "userId",
         select: "firstName lastName",
       },
     })
-    .select("liked");
+    .select("liked")
+    .lean();
 
   if (!userProfile) {
-    throw new Error("User Doesn't Exist");
+    throw customError(404, "User Doesn't Exist");
   }
 
   return userProfile.liked;
@@ -36,22 +37,27 @@ exports.likeUser = async (userId, likedUserId) => {
     throw customError(400, "You already liked this user!");
   }
 
-  await UserProfile.updateOne(
+  const likedUserProfile = await UserProfile.findOne({ userId: likedUserId });
+
+  if (!likedUserProfile) {
+    throw customError(400, `No User with ID:${likedUserId}`);
+  }
+
+  await UserProfile.findOneAndUpdate(
     { userId },
     {
-      $addToSet: { liked: likedUserId },
-      $pull: { disLiked: likedUserId },
-    }
+      $addToSet: { liked: likedUserProfile._id },
+      $pull: { disLiked: likedUserProfile._id },
+    },
+    { new: true }
   );
-
-  const likedUser = await UserProfile.findOne({ _id: likedUserId });
 
   let isMatch = false;
 
   //  Creates A Match if Both Users like Each Other
-  if (likedUser.liked.includes(userId)) {
+  if (likedUserProfile && likedUserProfile.liked.includes(userId)) {
     isMatch = true;
-    await Match.create({ members: [userId, likedUser._id] });
+    await Match.create({ members: [userId, likedUser.userId] });
   }
 
   return {
@@ -65,7 +71,26 @@ exports.unlikeUser = async (userId, unlikedUserId) => {
     throw customError(400, `ID:${unlikedUserId} is not a valid Id`);
   }
 
-  await UserProfile.updateOne({ userId }, { $pull: { liked: unlikedUserId } });
+  const userProfile = await UserProfile.findOne({ userId });
+
+  if (!userProfile) {
+    throw customError(404, "User profile not found");
+  }
+
+  const unlikedUserProfile = await UserProfile.findOne({
+    userId: unlikedUserId,
+  });
+
+  if (!unlikedUserProfile) {
+    throw customError(400, `No User with ID:${unlikedUserId}`);
+  }
+
+  await UserProfile.findOneAndUpdate(
+    { userId },
+    { $pull: { liked: unlikedUserProfile._id } },
+    { new: true }
+  );
+
   // Removes the match
   await Match.findOneAndDelete({ members: [userId, unlikedUserId] });
 

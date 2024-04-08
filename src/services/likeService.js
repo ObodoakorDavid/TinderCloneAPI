@@ -7,7 +7,7 @@ exports.getUserLikes = async (userId) => {
   const userProfile = await UserProfile.findOne({ userId })
     .populate({
       path: "liked",
-      select: "image interest userId",
+      select: "image interest about userId",
       populate: {
         path: "userId",
         select: "firstName lastName",

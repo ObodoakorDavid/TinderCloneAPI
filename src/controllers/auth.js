@@ -80,7 +80,9 @@ const loginUser = asyncWrapper(async (req, res, next) => {
   //generate new token
   const token = userProfile.createJWT();
 
-  res.status(200).json({ id: user._id, token, image: userProfile.image });
+  res
+    .status(200)
+    .json({ id: user._id, token, role: user.role, image: userProfile.image });
 });
 
 //GET USER

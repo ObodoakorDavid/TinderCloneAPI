@@ -1,6 +1,7 @@
 const UserProfile = require("../models/userProfile");
 const customError = require("../utils/customError");
 const validateMongoId = require("../utils/validateMongoId");
+const blockService = require("../services/blockService");
 
 exports.getUserDislikes = async (userId) => {
   const userProfile = await UserProfile.findOne({ userId })
@@ -25,6 +26,8 @@ exports.dislikeUser = async (userId, dislikedUserId) => {
   if (!validateMongoId(dislikedUserId)) {
     throw customError(400, `ID:${dislikedUserId} is not a valid Id`);
   }
+
+  await blockService.isBlockedByUser(userId, dislikedUserId);
 
   const userProfile = await UserProfile.findOne({
     userId,
@@ -58,6 +61,8 @@ exports.undislikeUser = async (userId, undislikedUserId) => {
   if (!validateMongoId(undislikedUserId)) {
     throw customError(400, `ID:${undislikedUserId} is not a valid Id`);
   }
+
+  await blockService.isBlockedByUser(userId, undislikedUserId);
 
   const userProfile = await UserProfile.findOne({ userId });
 

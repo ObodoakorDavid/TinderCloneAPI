@@ -3,6 +3,8 @@ const customError = require("../utils/customError");
 const validateMongoId = require("../utils/validateMongoId");
 const Match = require("../models/match");
 
+const blockService = require("../services/blockService");
+
 exports.getUserLikes = async (userId) => {
   const userProfile = await UserProfile.findOne({ userId })
     .populate({
@@ -27,6 +29,8 @@ exports.likeUser = async (userId, likedUserId) => {
   if (!validateMongoId(likedUserId)) {
     throw customError(400, `ID:${likedUserId} is not a valid Id`);
   }
+
+  await blockService.isBlockedByUser(userId, likedUserId);
 
   const userProfile = await UserProfile.findOne({
     userId,
@@ -70,6 +74,8 @@ exports.unlikeUser = async (userId, unlikedUserId) => {
   if (!validateMongoId(unlikedUserId)) {
     throw customError(400, `ID:${unlikedUserId} is not a valid Id`);
   }
+
+  await blockService.isBlockedByUser(userId, unlikedUserId);
 
   const userProfile = await UserProfile.findOne({ userId });
 

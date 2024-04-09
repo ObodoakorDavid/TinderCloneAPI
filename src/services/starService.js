@@ -1,6 +1,7 @@
 const UserProfile = require("../models/userProfile");
 const customError = require("../utils/customError");
 const validateMongoId = require("../utils/validateMongoId");
+const blockService = require("../services/blockService");
 
 exports.getUserStars = async (userId) => {
   const userProfile = await UserProfile.findOne({ userId })
@@ -28,6 +29,8 @@ exports.starUser = async (userId, starredUserId) => {
   if (!validateMongoId(starredUserId)) {
     throw customError(400, `ID:${starredUserId} is not a valid Id`);
   }
+
+  await blockService.isBlockedByUser(userId, starredUserId);
 
   const userProfile = await UserProfile.findOne({
     userId,
@@ -60,6 +63,8 @@ exports.unStarUser = async (userId, unstarredUserId) => {
   if (!validateMongoId(unstarredUserId)) {
     throw customError(400, `ID:${unstarredUserId} is not a valid Id`);
   }
+
+  await blockService.isBlockedByUser(userId, unstarredUserId);
 
   const userProfile = await UserProfile.findOne({ userId });
 

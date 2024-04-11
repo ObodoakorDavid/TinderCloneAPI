@@ -17,9 +17,6 @@ const getSingleUser = asyncWrapper(async (req, res) => {
 const getAllMatches = asyncWrapper(async (req, res) => {
   const { userId } = req.user;
   const users = await usersService.getAllMatches(userId, req.query);
-  if (!users || users.length === 0) {
-    throw customError(404, "No users found");
-  }
   res.status(200).json({ users });
 });
 

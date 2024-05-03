@@ -8,6 +8,7 @@ const generateEmail = require("../utils/generateEmail");
 const userService = require("../services/userService");
 const uploadService = require("../services/uploadService");
 const asyncWrapper = require("../middlewares/asyncWrapper");
+const generateToken = require("../config/generateToken");
 
 const registerUser = asyncWrapper(async (req, res, next) => {
   //grab email, password from req.body
@@ -78,7 +79,7 @@ const loginUser = asyncWrapper(async (req, res, next) => {
   await userProfile.save(); // Save the updated userProfile document
 
   //generate new token
-  const token = userProfile.createJWT();
+  const token = generateToken(user._id);
 
   res
     .status(200)

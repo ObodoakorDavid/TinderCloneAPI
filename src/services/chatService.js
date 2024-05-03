@@ -63,6 +63,7 @@ exports.addMessageToChat = async (chatId, sender, text) => {
 };
 
 exports.getUserChats = async (userId) => {
+  console.log(userId);
   try {
     const userChats = await Chat.find({ members: { $in: [userId] } })
       .select("_id members messages")

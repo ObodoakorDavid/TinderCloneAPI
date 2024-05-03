@@ -1,4 +1,3 @@
-const customError = require("../utils/customError");
 const usersService = require("../services/usersService");
 const asyncWrapper = require("../middlewares/asyncWrapper");
 

@@ -43,11 +43,7 @@ exports.addMessageToChat = async (chatId, sender, text) => {
     // Query for the new message and populate the 'sender' field
     const populatedMessage = await Message.findById(newMessage._id).populate({
       path: "sender",
-      select: "userId",
-      populate: {
-        path: "userId",
-        select: "firstName lastName",
-      },
+      select: "firstName lastName",
     });
 
     // Add the new message reference to the chat
@@ -69,11 +65,7 @@ exports.getUserChats = async (userId) => {
       .select("_id members messages")
       .populate({
         path: "members",
-        select: "image",
-        populate: {
-          path: "userId",
-          select: "firstName lastName",
-        },
+        select: "image firstName lastName",
       })
       .populate({
         path: "messages",
@@ -82,10 +74,6 @@ exports.getUserChats = async (userId) => {
           {
             path: "sender",
             select: "sender image",
-            populate: {
-              path: "userId",
-              select: "firstName",
-            },
           },
         ],
       });
@@ -106,7 +94,7 @@ exports.getUserChats = async (userId) => {
         lastMessage: lastMessage
           ? {
               text: lastMessage.text,
-              sender: lastMessage.sender.userId.firstName,
+              sender: lastMessage.sender.firstName,
               createdAt: lastMessage.createdAt,
             }
           : null,

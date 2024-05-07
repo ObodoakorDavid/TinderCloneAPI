@@ -8,7 +8,7 @@ const chatSchema = new mongoose.Schema(
       type: [
         {
           type: mongoose.Types.ObjectId,
-          ref: "User",
+          ref: "UserProfile",
           required: true,
         },
       ],

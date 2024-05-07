@@ -1,5 +1,6 @@
 const Chat = require("../models/chat");
 const Message = require("../models/message");
+const UserProfile = require("../models/userProfile");
 const validateMongoId = require("../utils/validateMongoId");
 
 exports.startChat = async (participants) => {
@@ -11,15 +12,18 @@ exports.startChat = async (participants) => {
       throw new Error("Participants Id Not Valid");
     }
 
+    const userProfile1 = await UserProfile.findOne({ userId: participants[0] });
+    const userProfile2 = await UserProfile.findOne({ userId: participants[1] });
+
     const existingChat = await Chat.findOne({
-      members: { $all: participants },
+      members: { $all: [userProfile1._id, userProfile2._id] },
     });
 
     if (existingChat) {
       return existingChat;
     }
     const newChat = await Chat.create({
-      members: participants,
+      members: [userProfile1._id, userProfile2._id],
       messages: [], // Initially, the chat may not have any messages
     });
 
@@ -29,14 +33,16 @@ exports.startChat = async (participants) => {
   }
 };
 
-exports.addMessageToChat = async (chatId, sender, text) => {
-  console.log(sender);
+exports.addMessageToChat = async (chatId, senderId, text) => {
   if (!validateMongoId(chatId)) {
     throw new Error(`${chatId} is not a valid ID`);
   }
+
   try {
+    const userProfile = await UserProfile.findOne({ userId: senderId });
+
     const newMessage = await Message.create({
-      sender: sender, // Assuming sender is the user who sent the message
+      sender: userProfile._id, // Assuming sender is the user who sent the message
       text: text,
     });
 
@@ -59,26 +65,33 @@ exports.addMessageToChat = async (chatId, sender, text) => {
 };
 
 exports.getUserChats = async (userId) => {
-  console.log(userId);
   try {
-    const userChats = await Chat.find({ members: { $in: [userId] } })
+    const userProfile = await UserProfile.findOne({ userId: userId });
+
+    const userChats = await Chat.find({ members: { $in: [userProfile._id] } })
       .select("_id members messages")
       .populate({
         path: "members",
-        select: "image firstName lastName",
+        select: "image",
+        populate: {
+          path: "userId",
+          select: "firstName lastName",
+        },
       })
       .populate({
         path: "messages",
         options: { sort: { createdAt: -1 }, limit: 1 },
-        populate: [
-          {
-            path: "sender",
-            select: "sender image",
+        populate: {
+          path: "sender",
+          select: "userId image",
+          populate: {
+            path: "userId",
+            select: "firstName lastName",
           },
-        ],
+        },
       });
     // return userChats;
-    console.log(userChats);
+    // console.log(userChats);
 
     const chatsWithLastMessage = userChats.map((chat) => {
       const lastMessage = chat.messages.length > 0 ? chat.messages[0] : null;
@@ -87,6 +100,7 @@ exports.getUserChats = async (userId) => {
         (member) => member._id.toString() !== userId.toString()
       );
 
+      // console.log(lastMessage);
       console.log(otherUser);
 
       return {
@@ -94,7 +108,7 @@ exports.getUserChats = async (userId) => {
         lastMessage: lastMessage
           ? {
               text: lastMessage.text,
-              sender: lastMessage.sender.firstName,
+              sender: lastMessage.sender.userId.firstName,
               createdAt: lastMessage.createdAt,
             }
           : null,
@@ -120,7 +134,7 @@ exports.getChatMessages = async (chatId) => {
         path: "messages",
         populate: {
           path: "sender",
-          select: "_id userId",
+          select: "userId",
           populate: {
             path: "userId",
             select: "firstName",

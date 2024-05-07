@@ -11,7 +11,8 @@ const startChat = asyncWrapper(async (req, res, next) => {
 // Add Message To Chat
 const addMessageToChat = asyncWrapper(async (req, res, next) => {
   const { chatId } = req.params;
-  const { sender, text } = req.body;
+  const { text } = req.body;
+  const { userId: sender } = req.user;
   const newMessage = await chatService.addMessageToChat(chatId, sender, text);
   res.status(201).json({ message: newMessage });
 });

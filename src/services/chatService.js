@@ -4,6 +4,7 @@ const UserProfile = require("../models/userProfile");
 const validateMongoId = require("../utils/validateMongoId");
 
 exports.startChat = async (participants) => {
+  console.log(participants);
   try {
     if (
       !validateMongoId(participants[0]) ||
@@ -49,7 +50,11 @@ exports.addMessageToChat = async (chatId, senderId, text) => {
     // Query for the new message and populate the 'sender' field
     const populatedMessage = await Message.findById(newMessage._id).populate({
       path: "sender",
-      select: "firstName lastName",
+      select: "userId",
+      populate: {
+        path: "userId",
+        select: "firstName lastName",
+      },
     });
 
     // Add the new message reference to the chat
@@ -90,8 +95,6 @@ exports.getUserChats = async (userId) => {
           },
         },
       });
-    // return userChats;
-    // console.log(userChats);
 
     const chatsWithLastMessage = userChats.map((chat) => {
       const lastMessage = chat.messages.length > 0 ? chat.messages[0] : null;
@@ -99,9 +102,6 @@ exports.getUserChats = async (userId) => {
       let otherUser = chat.members.find(
         (member) => member._id.toString() !== userId.toString()
       );
-
-      // console.log(lastMessage);
-      console.log(otherUser);
 
       return {
         chatId: chat._id,

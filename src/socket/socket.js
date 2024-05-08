@@ -2,10 +2,11 @@ const { Server } = require("socket.io");
 
 let onlineUsers = [];
 
-const handleNewUser = (io, socket, userId) => {
-  if (!onlineUsers.some((user) => user.userId === userId)) {
+const handleNewUser = (io, socket, data) => {
+  if (!onlineUsers.some((user) => user.userProfileId === data.userProfileId)) {
     onlineUsers.push({
-      userId,
+      userId: data.userId,
+      userProfileId: data.userProfileId,
       socketId: socket.id,
     });
   }
@@ -14,15 +15,18 @@ const handleNewUser = (io, socket, userId) => {
 };
 
 const handleMessage = (io, socket, data) => {
-  const user = onlineUsers.find((user) => user.userId === data.recipientId);
+  const user = onlineUsers.find(
+    (user) => user.userProfileId === data.recipientId
+  );
   if (user) {
     io.to(user.socketId).to(socket.id).emit("getMessage", data);
   }
 };
 
 const handleIsTyping = (io, socket, data) => {
-  console.log(data);
-  const user = onlineUsers.find((user) => user.userId === data.recipientId);
+  const user = onlineUsers.find(
+    (user) => user.userProfileId === data.recipientId
+  );
   if (user) {
     io.to(user.socketId).to(socket.id).emit("isTyping", data);
   }
@@ -42,9 +46,9 @@ const initializeSocket = (httpServer) => {
 
   io.on("connection", (socket) => {
     console.log("Web Socket is Up and Running!");
-    console.log(socket.id);
+    console.log(`User's Socket ID: ${socket.id}`);
 
-    socket.on("addNewUser", (userId) => handleNewUser(io, socket, userId));
+    socket.on("addNewUser", (data) => handleNewUser(io, socket, data));
 
     socket.on("sendMessage", (data) => handleMessage(io, socket, data));
 

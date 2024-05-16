@@ -4,7 +4,6 @@ const UserProfile = require("../models/userProfile");
 const validateMongoId = require("../utils/validateMongoId");
 
 exports.startChat = async (participants) => {
-  console.log(participants);
   try {
     if (
       !validateMongoId(participants[0]) ||
@@ -100,7 +99,7 @@ exports.getUserChats = async (userId) => {
       const lastMessage = chat.messages.length > 0 ? chat.messages[0] : null;
 
       let otherUser = chat.members.find(
-        (member) => member._id.toString() !== userId.toString()
+        (member) => member._id.toString() !== userProfile._id.toString()
       );
 
       return {

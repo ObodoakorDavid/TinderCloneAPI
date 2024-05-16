@@ -61,7 +61,6 @@ const loginUser = asyncWrapper(async (req, res, next) => {
 
   const isPasswordCorrect = await user.comparePassword(password);
 
-  console.log(user);
 
   if (!isPasswordCorrect) {
     throw customError(401, "Unauthorized");
@@ -152,7 +151,6 @@ const updateUser = asyncWrapper(async (req, res, next) => {
   }
 
   if (req.files) {
-    console.log(req.files);
     const photos = ["photo1", "photo2", "photo3", "photo4", "photo5", "photo6"];
 
     const images = photos
